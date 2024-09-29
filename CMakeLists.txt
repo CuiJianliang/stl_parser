@@ -2,11 +2,40 @@ cmake_minimum_required(VERSION 3.18)
 
 project(stl_parser)
 
-add_library(stl_parser SHARED src/stl_parser.cpp)
-target_include_directories(stl_parser PUBLIC include)
-target_compile_definitions(stl_parser PRIVATE -DDLL_EXPORT)
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-add_executable(ut_stl_parser src/main.cpp)
+option(BUILD_SHARED_LIBS "Specifies the type of libraries (SHARED or STATIC) to build" ON)
 
-target_link_libraries(ut_stl_parser stl_parser)
-target_include_directories(ut_stl_parser PUBLIC include)
+option(BUILD_RELEASE_TYPE "Specifies the type of libraries (RELEASE or DEBUG) to build" OFF)
+
+set(LIB_NAME)
+
+if (BUILD_RELEASE_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+    set(LIB_NAME ${PROJECT_NAME})
+else()
+    set(CMAKE_BUILD_TYPE Debug)
+    set(LIB_NAME ${PROJECT_NAME}d)
+endif()
+
+if (BUILD_SHARED_LIBS)
+    add_library(${LIB_NAME} SHARED src/stl_parser.cpp)
+    target_compile_definitions(${LIB_NAME} PRIVATE -DDLL_EXPORT)
+else()
+    add_library(${LIB_NAME} src/stl_parser.cpp)
+endif()
+
+target_include_directories(${LIB_NAME} PUBLIC include)
+
+set(ut_name ut_${PROJECT_NAME})
+
+add_executable(${ut_name} src/main.cpp)
+
+target_link_libraries(${ut_name} ${LIB_NAME})
+target_include_directories(${ut_name} PUBLIC include)
+
+set_target_properties(${ut_name} ${LIB_NAME} PROPERTIES
+                      RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin
+                      ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib
+                      LIBRARY_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/lib)

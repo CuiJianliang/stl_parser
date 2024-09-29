@@ -43,17 +43,22 @@
  *          endloop
  *      endfacet
  *  end
+ *  endsolid
  */
 
 struct STLFaceInfo {
+public:
     std::array<float, 3> normal;
     std::array<float, 3> vertex1;
     std::array<float, 3> vertex2;
     std::array<float, 3> vertex3;
     unsigned short attribute;
+
+public:
+    STLFaceInfo(): attribute(0) {}
 };
 
-enum STLFormat { BINARY = 0, ASCII = 1 };
+enum STLFormat { UNKNOWN = -1, BINARY = 0, ASCII = 1 };
 
 class DLL_API STLParser {
   public:
